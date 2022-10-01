@@ -1,0 +1,5 @@
+# 管理checkout的eol
+# 確保test的文本內容，不會因為eol的問題導致不相等
+* text eol=lf
+# *.html text eol=lf
+*.exe binary
