@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	highlighting "github.com/CarsonSlovoka/goldmark-highlighting/v2"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/yuin/goldmark"
 	"log"
 	"os"
@@ -33,32 +34,55 @@ func startTest(markdown goldmark.Markdown, testDir string) error {
 }
 
 func Test_NewHighlightingExtender(t *testing.T) {
-	markdown := goldmark.New(
+	mdCustomStyle := goldmark.New(
 		goldmark.WithExtensions(
-			highlighting.NewExtender(),
+			highlighting.NewExtender(
+				highlighting.WithCustomStyle(styles.Monokai), // 這個其實是讓您自己去定義chroma.styles，不過如果您不想指定，也可以用這種方式，好處是不會怕打錯字
+			),
 		),
 	)
 
-	if err := startTest(markdown, "basic"); err != nil {
-		t.Fatal(err)
+	mdStyle := goldmark.New(
+		goldmark.WithExtensions(
+			highlighting.NewExtender(highlighting.WithStyle("monokai")), // 不建議用這種名稱來指定style，怕打錯，如果名稱於chroma.styles.Get(style)找不到，會使用chroma.Fallback當作主題樣式
+		),
+	)
+
+	for _, markdown := range []goldmark.Markdown{mdCustomStyle, mdStyle} {
+		if err := startTest(markdown, "basic"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
 func ExampleHTMLRenderer_options() {
 	renderDefault := highlighting.NewHTMLRenderer().(*highlighting.HTMLRenderer)
 	fmt.Println("Default")
-	fmt.Printf("%+v\n", renderDefault)
+	fmt.Println(renderDefault.NoHighlight)
+	fmt.Println(renderDefault.GuessLanguage)
+	fmt.Println(renderDefault.Style)
+	fmt.Println(renderDefault.CustomStyle)
 
 	renderCustomize := highlighting.NewHTMLRenderer(
 		highlighting.WithGuessLanguage(true),
 		highlighting.WithNoHighlight(true),
+		highlighting.WithStyle("github"), // Ignore the 'Style:github' since the 'CustomStyle:vim' have been set.
+		highlighting.WithCustomStyle(styles.Vim),
 	).(*highlighting.HTMLRenderer)
 	fmt.Println("Customize")
-	fmt.Printf("%+v\n", renderCustomize)
+
+	fmt.Println(renderCustomize.NoHighlight)
+	fmt.Println(renderCustomize.GuessLanguage)
+	fmt.Println(renderCustomize.CustomStyle.Name)
 
 	// Output:
 	// Default
-	// {"NoHighlight":false,"GuessLanguage":false}
+	// false
+	// false
+	// github
+	// <nil>
 	// Customize
-	// {"NoHighlight":true,"GuessLanguage":true}
+	// true
+	// true
+	// vim
 }

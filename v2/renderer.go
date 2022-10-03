@@ -6,6 +6,7 @@ import (
 	"github.com/alecthomas/chroma/v2"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
@@ -22,6 +23,11 @@ func NewHTMLRenderer(opts ...Option) renderer.NodeRenderer {
 	for _, o := range opts {
 		o.SetHighlightingOption(r.RendererConfig) // 把所有opt的結果寫入到r.config之中
 	}
+
+	if r.Style == "" && r.CustomStyle == nil {
+		r.Style = styles.GitHub.Name
+	}
+
 	return r
 }
 
@@ -109,12 +115,16 @@ func (r *HTMLRenderer) writeCodeBlock(
 	}
 
 	formatter := chromahtml.New()
+	style := r.CustomStyle
+	if style == nil { // 無自定義主題，則嘗試用chroma所註冊的主題列表中搜尋匹配的主題
+		style = styles.Get(r.Style) // 注意，如果名稱匹配找不到返回的是chroma.Fallback的主題
+	}
 
 	// Head
 	_, _ = w.WriteString(fmt.Sprintf("<div class=\"highlight %s\">\n", language))
 
 	// Body
-	_ = formatter.Format(w, DefaultStyle, iterator) // chroma的核心，可以把該token渲染成指定的樣式
+	_ = formatter.Format(w, style, iterator) // chroma的核心，可以把該token渲染成指定的樣式
 
 	// Tail
 	_, _ = w.WriteString("\n</div>")
