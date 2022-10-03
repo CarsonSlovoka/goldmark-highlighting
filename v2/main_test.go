@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	highlighting "github.com/CarsonSlovoka/goldmark-highlighting/v2"
+	hOpts "github.com/CarsonSlovoka/goldmark-highlighting/v2/options"
 	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/yuin/goldmark"
 	"log"
@@ -37,14 +38,14 @@ func Test_NewHighlightingExtender(t *testing.T) {
 	mdCustomStyle := goldmark.New(
 		goldmark.WithExtensions(
 			highlighting.NewExtender(
-				highlighting.WithCustomStyle(styles.Monokai), // 這個其實是讓您自己去定義chroma.styles，不過如果您不想指定，也可以用這種方式，好處是不會怕打錯字
+				hOpts.WithCustomStyle(styles.Monokai), // 這個其實是讓您自己去定義chroma.styles，不過如果您不想指定，也可以用這種方式，好處是不會怕打錯字
 			),
 		),
 	)
 
 	mdStyle := goldmark.New(
 		goldmark.WithExtensions(
-			highlighting.NewExtender(highlighting.WithStyle("monokai")), // 不建議用這種名稱來指定style，怕打錯，如果名稱於chroma.styles.Get(style)找不到，會使用chroma.Fallback當作主題樣式
+			highlighting.NewExtender(hOpts.WithStyle("monokai")), // 不建議用這種名稱來指定style，怕打錯，如果名稱於chroma.styles.Get(style)找不到，會使用chroma.Fallback當作主題樣式
 		),
 	)
 
@@ -64,10 +65,10 @@ func ExampleHTMLRenderer_options() {
 	fmt.Println(renderDefault.CustomStyle)
 
 	renderCustomize := highlighting.NewHTMLRenderer(
-		highlighting.WithGuessLanguage(true),
-		highlighting.WithNoHighlight(true),
-		highlighting.WithStyle("github"), // Ignore the 'Style:github' since the 'CustomStyle:vim' have been set.
-		highlighting.WithCustomStyle(styles.Vim),
+		hOpts.WithGuessLanguage(true),
+		hOpts.WithNoHighlight(true),
+		hOpts.WithStyle("github"), // Ignore the 'Style:github' since the 'CustomStyle:vim' have been set.
+		hOpts.WithCustomStyle(styles.Vim),
 	).(*highlighting.HTMLRenderer)
 	fmt.Println("Customize")
 

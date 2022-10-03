@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/alecthomas/chroma/v2"
-	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	chromaHtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/yuin/goldmark/ast"
@@ -114,7 +114,7 @@ func (r *HTMLRenderer) writeCodeBlock(
 		return defaultHandlerFunc()
 	}
 
-	formatter := chromahtml.New()
+	formatter := chromaHtml.New()
 	style := r.CustomStyle
 	if style == nil { // 無自定義主題，則嘗試用chroma所註冊的主題列表中搜尋匹配的主題
 		style = styles.Get(r.Style) // 注意，如果名稱匹配找不到返回的是chroma.Fallback的主題
