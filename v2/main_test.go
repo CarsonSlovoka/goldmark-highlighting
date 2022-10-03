@@ -6,6 +6,7 @@ import (
 	"fmt"
 	highlighting "github.com/CarsonSlovoka/goldmark-highlighting/v2"
 	hOpts "github.com/CarsonSlovoka/goldmark-highlighting/v2/options"
+	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/yuin/goldmark"
 	"log"
@@ -54,6 +55,50 @@ func Test_NewHighlightingExtender(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func ExampleWithCustomStyle() {
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			highlighting.NewExtender(
+				hOpts.WithCustomStyle(
+					styles.Register(chroma.MustNewStyle("my-style", chroma.StyleEntries{
+						chroma.Comment:        "italic #888",
+						chroma.CommentSpecial: "#888",
+						chroma.Keyword:        "#00f",
+						chroma.OperatorWord:   "#00f",
+						chroma.Name:           "#000",
+						chroma.LiteralNumber:  "#3af",
+						chroma.LiteralString:  "#5a2",
+						chroma.Error:          "#F00",
+						chroma.Background:     " bg:#ffffff",
+					}),
+					),
+				))))
+	content := `🐬🐬🐬go
+package main
+import "fmt"
+
+func main() {
+	fmt.Println("Hello World!") // comment
+}
+🐬🐬🐬`
+	result := bytes.NewBuffer(make([]byte, 0))
+	if err := md.Convert([]byte(strings.ReplaceAll(content, "🐬", "`")), result); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(result)
+	// Output:
+	// <div class="highlight Go">
+	// <pre tabindex="0" style="background-color:#fff;"><code><span style="display:flex;"><span><span style="color:#00f">package</span> <span style="color:#000">main</span>
+	// </span></span><span style="display:flex;"><span><span style="color:#00f">import</span> <span style="color:#5a2">&#34;fmt&#34;</span>
+	// </span></span><span style="display:flex;"><span>
+	// </span></span><span style="display:flex;"><span><span style="color:#00f">func</span> <span style="color:#000">main</span>() {
+	// </span></span><span style="display:flex;"><span>	<span style="color:#000">fmt</span>.<span style="color:#000">Println</span>(<span style="color:#5a2">&#34;Hello World!&#34;</span>) <span style="color:#888;font-style:italic">// comment
+	// </span></span></span><span style="display:flex;"><span><span style="color:#888;font-style:italic"></span>}
+	// </span></span></code></pre>
+	// </div>
 }
 
 func ExampleHTMLRenderer_options() {
