@@ -35,11 +35,30 @@ func startTest(markdown goldmark.Markdown, testDir string) error {
 func Test_NewHighlightingExtender(t *testing.T) {
 	markdown := goldmark.New(
 		goldmark.WithExtensions(
-			highlighting.NewHighlightingExtender(),
+			highlighting.NewExtender(),
 		),
 	)
 
 	if err := startTest(markdown, "basic"); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func ExampleHTMLRenderer_options() {
+	renderDefault := highlighting.NewHTMLRenderer().(*highlighting.HTMLRenderer)
+	fmt.Println("Default")
+	fmt.Printf("%+v\n", renderDefault)
+
+	renderCustomize := highlighting.NewHTMLRenderer(
+		highlighting.WithGuessLanguage(true),
+		highlighting.WithNoHighlight(true),
+	).(*highlighting.HTMLRenderer)
+	fmt.Println("Customize")
+	fmt.Printf("%+v\n", renderCustomize)
+
+	// Output:
+	// Default
+	// {"NoHighlight":false,"GuessLanguage":false}
+	// Customize
+	// {"NoHighlight":true,"GuessLanguage":true}
 }

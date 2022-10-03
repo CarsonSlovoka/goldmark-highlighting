@@ -11,18 +11,26 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
-type highlightingHTMLRenderer struct{}
-
-func NewHighlightingHTMLRenderer() renderer.NodeRenderer {
-	return &highlightingHTMLRenderer{}
+type HTMLRenderer struct {
+	*RendererConfig
 }
 
-func (r *highlightingHTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+func NewHTMLRenderer(opts ...Option) renderer.NodeRenderer {
+	r := &HTMLRenderer{&RendererConfig{
+		// GuessLanguage: true, // 預設不啟用
+	}}
+	for _, o := range opts {
+		o.SetHighlightingOption(r.RendererConfig) // 把所有opt的結果寫入到r.config之中
+	}
+	return r
+}
+
+func (r *HTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(ast.KindFencedCodeBlock, r.nodeRendererFunc) // codeBlock不需要再定義額外的ast去描述，基於原始的KindFencedCodeBlock增加額外的判斷即可
 }
 
 // nodeRendererFunc 此函數可以把結果直接寫到writer之中，就能對輸出產生影響
-func (r *highlightingHTMLRenderer) nodeRendererFunc(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+func (r *HTMLRenderer) nodeRendererFunc(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	if !entering {
 		return ast.WalkContinue, nil
 	}
@@ -33,9 +41,6 @@ func (r *highlightingHTMLRenderer) nodeRendererFunc(w util.BufWriter, source []b
 	{
 		// TODO
 	}
-
-	noHighlight := false
-	guessLanguage := false
 
 	var codeBlockContent bytes.Buffer
 	l := n.Lines().Len()
@@ -78,7 +83,7 @@ func (r *highlightingHTMLRenderer) nodeRendererFunc(w util.BufWriter, source []b
 		}
 	}
 
-	if !noHighlight && guessLanguage {
+	if !r.NoHighlight && r.GuessLanguage {
 		if lexer = lexers.Analyse(codeBlockContent.String()); lexer != nil {
 			return r.writeCodeBlock(w, lexer, &codeBlockContent, defaultCodeBlockHandlerFunc)
 		}
@@ -87,7 +92,7 @@ func (r *highlightingHTMLRenderer) nodeRendererFunc(w util.BufWriter, source []b
 	return defaultCodeBlockHandlerFunc()
 }
 
-func (r *highlightingHTMLRenderer) writeCodeBlock(
+func (r *HTMLRenderer) writeCodeBlock(
 	w util.BufWriter, lexer chroma.Lexer, codeBlockContent *bytes.Buffer,
 	defaultHandlerFunc func() (ast.WalkStatus, error),
 ) (ast.WalkStatus, error) {
