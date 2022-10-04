@@ -1,0 +1,65 @@
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+name: Go Test
+on:
+  push:
+    branches-ignore:
+      - temp
+  pull_request:
+    branches-ignore:
+      - temp
+defaults:
+  run:
+    # cache.key不算在內，只會影響run.working-directory
+    working-directory: ./src
+jobs:
+  test:
+    strategy:
+      matrix:
+        # [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ windows-latest ]
+        # https://github.com/actions/cache/blob/main/examples.md?plain=1#L468-L491
+        include:
+          - platform: windows-latest
+            path: ~\AppData\Local\go-build
+          # 有列出來的項目platform都必須要找的到才可以，不然map[key]錯誤就會導致後面的所有流程都沒辦法執行
+          # - platform: macos-latest
+          #   path: ~/Library/Caches/go-build
+          # - platform: ubuntu-latest
+          #   path: ~/.cache/go-build
+        go-version: [ 1.19.x ]
+    runs-on: ${{ matrix.platform }}
+    name: Integration tests
+    steps:
+      - name: Setup Go.
+        uses: actions/setup-go@v3
+          with:
+            go-version: ${{ matrix.go-version }}
+
+      - name: Check out code into the Go module directory.
+        uses: actions/checkout@v3
+
+      # https://github.com/actions/cache#example-workflow
+      # https://github.com/actions/cache/blob/main/examples.md#go---modules
+      - name: Enable Cache
+        # Note: The id defined in actions/cache must match the id in the if statement (i.e. steps.[ID].outputs.cache-hit)
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ matrix.path }}
+            ~\go\pkg\mod
+          key: ${{ runner.os }}-go-${{ hashFiles('v2/go.sum') }}
+          # 當key找不到時，會用restore-keys的名稱來取代
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: go mod tidy
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: go mod tidy
+
+      - name: test All
+        # run: go test -v -race -coverpkg=./... -coverprofile=coverage.txt ./... # 因為我寫了很多os讀檔的動作用race會很久
+        run: go test -v -race -coverpkg=./... -coverprofile=coverage.txt ./...
+        # go tool cover -html=coverage.txt 使用網頁查看覆蓋率檔案資料
+
+      - uses: codecov/codecov-action@v1
