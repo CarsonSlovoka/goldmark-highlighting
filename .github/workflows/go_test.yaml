@@ -7,10 +7,7 @@ on:
   pull_request:
     branches-ignore:
       - temp
-# defaults:
-  run:
-    # cache.key不算在內，只會影響run.working-directory
-    # working-directory: ./v2 # 已把mod放在根目錄
+
 jobs:
   test:
     strategy:
@@ -48,7 +45,7 @@ jobs:
           path: |
             ${{ matrix.path }}
             ~\go\pkg\mod
-          key: ${{ runner.os }}-go-${{ hashFiles('v2/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
           # 當key找不到時，會用restore-keys的名稱來取代
           restore-keys: |
             ${{ runner.os }}-go-
