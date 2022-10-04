@@ -41,7 +41,10 @@ func (o *withCustomStyle) SetHighlightingOption(config *RendererConfig) {
 }
 
 // WithCustomStyle define the style by yourself
-// https://xyproto.github.io/splash/docs/
+// 線上效果預覽:
+//   - https://xyproto.github.io/splash/docs/all.html
+//   - https://xyproto.github.io/splash/docs/
+//
 // https://github.com/alecthomas/chroma/tree/3f86ac7/styles
 // 只是定義關鍵字的顏色，如果您需要對文本內容進行解析要去擴展lexer
 // https://github.com/alecthomas/chroma/blob/master/lexers/html.go

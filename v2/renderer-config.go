@@ -3,6 +3,7 @@ package highlighting
 import (
 	"encoding/json"
 	"github.com/alecthomas/chroma/v2"
+	chromaHtml "github.com/alecthomas/chroma/v2/formatters/html"
 )
 
 type RendererConfig struct {
@@ -16,6 +17,10 @@ type RendererConfig struct {
 	// https://xyproto.github.io/splash/docs/
 	// https://github.com/alecthomas/chroma/tree/3f86ac7/styles
 	CustomStyle *chroma.Style
+
+	// See https://github.com/alecthomas/chroma#the-html-formatter for details.
+	// permalink: https://github.com/alecthomas/chroma/blob/d38b87110b078027006bc34aa27a065fa22295a1/README.md?plain=1#L175-L190
+	FormatOptions []chromaHtml.Option
 
 	NoHighlight   bool
 	GuessLanguage bool
