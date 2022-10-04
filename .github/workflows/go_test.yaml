@@ -10,7 +10,7 @@ on:
 defaults:
   run:
     # cache.key不算在內，只會影響run.working-directory
-    working-directory: ./src
+    working-directory: ./v2
 jobs:
   test:
     strategy:
@@ -32,8 +32,8 @@ jobs:
     steps:
       - name: Setup Go.
         uses: actions/setup-go@v3
-          with:
-            go-version: ${{ matrix.go-version }}
+        with:
+          go-version: ${{ matrix.go-version }}
 
       - name: Check out code into the Go module directory.
         uses: actions/checkout@v3
