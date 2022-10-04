@@ -7,10 +7,10 @@ on:
   pull_request:
     branches-ignore:
       - temp
-defaults:
+# defaults:
   run:
     # cache.key不算在內，只會影響run.working-directory
-    working-directory: ./v2
+    # working-directory: ./v2 # 已把mod放在根目錄
 jobs:
   test:
     strategy:
@@ -58,8 +58,10 @@ jobs:
         run: go mod tidy
 
       - name: test All
-        # run: go test -v -race -coverpkg=./... -coverprofile=coverage.txt ./... # 因為我寫了很多os讀檔的動作用race會很久
-        run: go test -v -race -coverpkg=./... -coverprofile=coverage.txt ./...
-        # go tool cover -html=coverage.txt 使用網頁查看覆蓋率檔案資料
+        # run: go test -v -race -coverpkg=./... -coverprofile=coverage.txt ./... # 有很多讀檔的動作，加了race會有點久
+        # run: go test -v -coverpkg=./... -coverprofile="../coverage.txt" ./...  # 把coverage.txt的檔案放到前一層，因為codecov-action@v1是在root目錄搜尋，但mod也需要，所以放棄
+        run: go test -v -coverpkg=./... -coverprofile="coverage.txt" ./...
+        # go tool cover -html=coverage # 使用網頁查看覆蓋率檔案資料
+        # go tool cover -html="coverage.txt"  # 如果有.要用"把路徑包起來，不然會有too many arguments的敘述出現
 
       - uses: codecov/codecov-action@v1

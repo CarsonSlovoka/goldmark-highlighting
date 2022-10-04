@@ -1,4 +1,4 @@
-module github.com/CarsonSlovoka/goldmark-highlighting/v2
+module github.com/CarsonSlovoka/goldmark-highlighting
 
 go 1.19
 
