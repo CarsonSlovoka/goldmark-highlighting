@@ -11,12 +11,14 @@ import (
 	"github.com/yuin/goldmark"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-func startTest(markdown goldmark.Markdown, testDir string) error {
-	content, err := os.ReadFile(fmt.Sprintf("testData/%s/input.md", testDir))
+func startTest(markdown goldmark.Markdown, testDir string, output bool) error {
+	testDir = fmt.Sprintf("testData/%s", testDir)
+	content, err := os.ReadFile(filepath.Join(testDir, "input.md"))
 	if err != nil {
 		return err
 	}
@@ -24,7 +26,14 @@ func startTest(markdown goldmark.Markdown, testDir string) error {
 	if err = markdown.Convert(content, got); err != nil {
 		return err
 	}
-	want, err := os.ReadFile(fmt.Sprintf("testData/%s/expected.html", testDir))
+
+	if output { // Debug用，注意！在這種情況，如果要把got.html複製到expected.html，IDE的複製可能會優化，導致有額外的字元產生，請選擇Paste as Plain Text或者直接把got.html改成expected.html直接覆蓋
+		f, _ := os.Create(filepath.Join(testDir, "got.html"))
+		_, _ = f.Write([]byte(got.String()))
+		_ = f.Close()
+	}
+
+	want, err := os.ReadFile(filepath.Join(testDir, "expected.html"))
 	if err != nil {
 		return err
 	}
@@ -51,11 +60,21 @@ func Test_NewHighlightingExtender(t *testing.T) {
 	)
 
 	for _, markdown := range []goldmark.Markdown{mdCustomStyle, mdStyle} {
-		if err := startTest(markdown, "basic"); err != nil {
+		if err := startTest(markdown, "basic", false); err != nil {
 			t.Fatal(err)
 		}
 	}
 }
+
+func Test_Attributes(t *testing.T) {
+	md := goldmark.New(goldmark.WithExtensions(highlighting.NewExtender()))
+	if err := startTest(md, "attr", false); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TODO
+// TestGuessLanguage
 
 func ExampleWithCustomStyle() {
 	md := goldmark.New(
