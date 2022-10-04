@@ -49,6 +49,7 @@ func (r *HTMLRenderer) getAttributes(node *ast.FencedCodeBlock, source []byte) [
 		return nil // 無任何屬性資料
 	}
 	// /S+排除大括號: [^\r\n\t\f\v {}]*
+	// https://regex101.com/r/KS7kNZ/1
 	re := regexp.MustCompile(`(?i)LPrefix=(?P<LPrefix>\S*)|tw=(?P<TW>\d*)|style="(?P<Style>\S*)"|hls=\[(?P<Hls>[\d\-, ]*)]*|base=(?P<Base>\d*)|linenos=(?P<Linenos>inline|table|true|false|1|0)`)
 	ms := re.FindAllStringSubmatch(strings.TrimRight(string(info), "}"), -1) // 修剪右側}正規式就可不必再多做判斷
 	var attr *Attributes
