@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-func startTest(markdown goldmark.Markdown, testDir string, output bool) error {
+func startTest(markdown goldmark.Markdown, testDir string, debug bool) error {
 	testDir = fmt.Sprintf("testData/%s", testDir)
 	content, err := os.ReadFile(filepath.Join(testDir, "input.md"))
 	if err != nil {
@@ -27,7 +27,7 @@ func startTest(markdown goldmark.Markdown, testDir string, output bool) error {
 		return err
 	}
 
-	if output { // Debug用，注意！在這種情況，如果要把got.html複製到expected.html，IDE的複製可能會優化，導致有額外的字元產生，請選擇Paste as Plain Text或者直接把got.html改成expected.html直接覆蓋
+	if debug { // 注意！在這種情況，如果要把got.html複製到expected.html，IDE的複製可能會優化，導致有額外的字元產生，請選擇Paste as Plain Text或者直接把got.html改成expected.html直接覆蓋
 		f, _ := os.Create(filepath.Join(testDir, "got.html"))
 		_, _ = f.Write([]byte(got.String()))
 		_ = f.Close()
@@ -73,8 +73,16 @@ func Test_Attributes(t *testing.T) {
 	}
 }
 
-// TODO
-// TestGuessLanguage
+func Test_guessLanguage(t *testing.T) {
+	md := goldmark.New(goldmark.WithExtensions(
+		highlighting.NewExtender(
+			hOpts.WithGuessLanguage(true),
+		),
+	))
+	if err := startTest(md, "guess-lang", false); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func ExampleWithCustomStyle() {
 	md := goldmark.New(

@@ -17,8 +17,8 @@ func (o *withGuessLanguage) SetHighlightingOption(config *RendererConfig) {
 	config.GuessLanguage = o.value
 }
 
-func WithGuessLanguage(val bool) Option {
-	return &withGuessLanguage{val}
+func WithGuessLanguage(enable bool) Option {
+	return &withGuessLanguage{enable}
 }
 
 type withNoHighlight struct {
