@@ -7,9 +7,13 @@ on:
   pull_request:
     branches-ignore:
       - temp
-
+defaults:
+  run:
+    # working-directory: ./v2
+    shell: pwsh # default shell used on Windows # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
 jobs:
-  test:
+  setup:
+    name: Setup
     strategy:
       matrix:
         # [ubuntu-latest, macos-latest, windows-latest]
@@ -25,7 +29,6 @@ jobs:
           #   path: ~/.cache/go-build
         go-version: [ 1.19.x ]
     runs-on: ${{ matrix.platform }}
-    name: Integration tests
     steps:
       - name: Setup Go.
         uses: actions/setup-go@v3
@@ -49,16 +52,49 @@ jobs:
           # 當key找不到時，會用restore-keys的名稱來取代
           restore-keys: |
             ${{ runner.os }}-go-
-
       - name: go mod tidy
         if: steps.cache.outputs.cache-hit != 'true'
         run: go mod tidy
 
-      - name: test All
+  test:
+    needs: [ setup ]
+    name: Integration tests
+    runs-on: windows-latest # runs-on一定要有
+    steps:
+      - name: go test -v
         # run: go test -v -race -coverpkg=./... -coverprofile=coverage.txt ./... # 有很多讀檔的動作，加了race會有點久
-        # run: go test -v -coverpkg=./... -coverprofile="../coverage.txt" ./...  # 把coverage.txt的檔案放到前一層，因為codecov-action@v1是在root目錄搜尋，但mod也需要，所以放棄
+        # run: go test -v -coverpkg=./... -coverprofile="../coverage.txt" ./...  # 把coverage.txt的檔案放到前一層，因為codecov-action@v1是在root目錄搜尋，但mod也需要，所以放棄 <-- 其實v3有提供directory應該可以解決這種問題
         run: go test -v -coverpkg=./... -coverprofile="coverage.txt" ./...
         # go tool cover -html=coverage # 使用網頁查看覆蓋率檔案資料
         # go tool cover -html="coverage.txt"  # 如果有.要用"把路徑包起來，不然會有too many arguments的敘述出現
-
-      - uses: codecov/codecov-action@v1
+        # go tool cover -func="coverage.txt" # 查看各個func的覆蓋率情況
+      - name: Cover Func
+        run: go tool cover -func="coverage.txt"
+      - name: Upload coverage file
+        # https://github.com/marketplace/actions/upload-a-build-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-artifact # 輸出名稱
+          path: |
+            coverage.txt
+  codecov:
+    name: Upload coverage to codecov
+    needs: [ setup, test ]
+    runs-on: windows-latest
+    env:
+      # token可以在這邊設定: https://github.com/CarsonSlovoka/goldmark-highlighting/settings/secrets/actions
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      ENABLE_CODECOV: false # 不啟用，不喜歡他需要擁有write code的權限，雖然他標榜不會對source code做更動: Codecov never adjusts source code, deletes branches, closes pull requests, or performs any other ‘write’ action. https://about.codecov.io/security/
+    steps:
+      - name: Upload code coverage to codecov
+        if: ${{ env.ENABLE_CODECOV == 'true' }}
+        # USAGE:
+        # - Example: https://github.com/codecov/codecov-action/blob/main/README.md#example-workflowyml-with-codecov-action
+        # - Arguments permalink: https://github.com/codecov/codecov-action/blob/e0fbd592d323cb2991fb586fdd260734fcb41fcb/README.md?plain=1#L47-L82
+        # v1已經棄用: https://github.com/codecov/codecov-action/blob/main/README.md#migration-from-v1-to-v3
+        # https://github.com/marketplace/actions/codecov
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          files: ./coverage1.txt
+          flags: unittests # 可以支持多種，用,隔開. unittests, uitests
+          verbose: true # default = false
