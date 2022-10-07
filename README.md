@@ -1,3 +1,18 @@
+<p align="center">
+  <a href="http://golang.org">
+      <img src="https://img.shields.io/badge/Made%20with-Go-1f425f.svg" alt="Made with Go">
+  </a>
+
+  <img src="https://img.shields.io/github/go-mod/go-version/CarsonSlovoka/goldmark-highlighting?filename=v2%2Fgo.mod" alt="Go Version">
+
+  <a href="https://GitHub.com/CarsonSlovoka/goldmark-highlighting/releases/">
+      <img src="https://img.shields.io/github/release/CarsonSlovoka/goldmark-highlighting" alt="Latest release">
+  </a>
+  <a href="https://github.com/CarsonSlovoka/goldmark-highlighting/blob/master/LICENSE">
+      <img src="https://img.shields.io/github/license/CarsonSlovoka/goldmark-highlighting.svg" alt="License">
+  </a>
+</p>
+
 # goldmark-highlighting
 
 這是一個[goldmark](https://github.com/yuin/goldmark)的擴充功能

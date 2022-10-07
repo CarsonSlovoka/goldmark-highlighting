@@ -159,3 +159,10 @@ func ExampleHTMLRenderer_options() {
 	// true
 	// vim
 }
+
+func ExampleRendererConfig_String() {
+	cfg := new(highlighting.RendererConfig)
+	fmt.Println(cfg)
+	// Output:
+	// {"Style":"","CustomStyle":null,"FormatOptions":null,"NoHighlight":false,"GuessLanguage":false}
+}
